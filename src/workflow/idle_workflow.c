@@ -56,6 +56,7 @@ static void _init_communication(void)
 
 void idle_workflow_blocking(void)
 {
+    /*
     component_t* waiting_screen = waiting_create();
     UG_ClearBuffer();
     waiting_screen->f->render(waiting_screen);
@@ -65,5 +66,6 @@ void idle_workflow_blocking(void)
     // Added deliberately as a UX/visual improvement, to show the BB02 logo first.
     delay_ms(1300);
 #endif
+*/
     _init_communication();
 }
