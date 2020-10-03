@@ -21,5 +21,6 @@
  * Creates a waiting screen.
  */
 component_t* waiting_create(void);
+component_t* lockscreen_create(void);
 
 #endif
