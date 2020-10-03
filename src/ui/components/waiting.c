@@ -67,3 +67,29 @@ component_t* waiting_create(void)
     ui_util_add_sub_component(waiting, bb2_logo);
     return waiting;
 }
+
+/**
+ * Creates a lockscreen (instead of "see bitboxapp").
+ */
+component_t* lockscreen_create(void)
+{
+    component_t* waiting = malloc(sizeof(component_t));
+    if (!waiting) {
+        Abort("Error: malloc waiting");
+    }
+    memset(waiting, 0, sizeof(component_t));
+    waiting->f = &_component_functions;
+    waiting->dimension.width = SCREEN_WIDTH;
+    waiting->dimension.height = SCREEN_HEIGHT;
+    waiting->position.top = 0;
+    waiting->position.left = 0;
+    component_t* bb2_logo = image_create(
+        IMAGE_BB2_LOCK,
+        sizeof(IMAGE_BB2_LOCK),
+        IMAGE_BB2_LOCK_W,
+        IMAGE_BB2_LOCK_H,
+        CENTER,
+        waiting);
+    ui_util_add_sub_component(waiting, bb2_logo);
+    return waiting;
+}
