@@ -43,7 +43,12 @@ static void _init_communication(void)
 #elif PLATFORM_BITBOX02 == 1
     usb_start(hww_setup);
 #endif
-    ui_screen_stack_push(info_centered_create("See the BitBoxApp", NULL));
+    //ui_screen_stack_push(info_centered_create("See the BitBoxApp", NULL));
+    component_t* lockscreen = lockscreen_create();
+    UG_ClearBuffer();
+    lockscreen->f->render(lockscreen);
+    UG_SendBuffer();
+    lockscreen->f->cleanup(lockscreen);
 }
 
 void idle_workflow_blocking(void)
