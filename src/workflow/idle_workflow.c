@@ -44,11 +44,14 @@ static void _init_communication(void)
     usb_start(hww_setup);
 #endif
     //ui_screen_stack_push(info_centered_create("See the BitBoxApp", NULL));
+    /*
     component_t* lockscreen = lockscreen_create();
     UG_ClearBuffer();
     lockscreen->f->render(lockscreen);
     UG_SendBuffer();
     lockscreen->f->cleanup(lockscreen);
+    */
+    ui_screen_stack_switch(lockscreen_create());
 }
 
 void idle_workflow_blocking(void)
