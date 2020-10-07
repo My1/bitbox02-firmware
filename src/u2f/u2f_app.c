@@ -18,6 +18,21 @@ typedef struct {
     const char* name;
 } app_t;
 
+static void short_mnemonic(
+    char* mnemonic,
+    const char** wordlist_out)
+{
+    char* next_word = strtok(mnemonic, " ");
+
+    int i = 0;
+    while (next_word != NULL&&i<4) {
+        wordlist_out[i] = next_word;
+        next_word = strtok(NULL, " ");
+        i++;
+    }
+//    *words_count_out = i;
+}
+
 static const app_t _apps[] = {
     {
         // sha256('https://github.com/u2f/trusted_facets')
@@ -150,8 +165,7 @@ static void _app_string(const uint8_t* app_id, char* out, size_t out_len)
         return;
     }
     const char* words[24];
-    uint8_t words_count;
-    _split_and_save_wordlist(mnemonic, words, &words_count);
+    short_mnemonic(mnemonic, words);
     snprintf(out, out_len, "Unknown site:\n%s %s\n%s %s", words[0], words[1],words[2],words[3]);
 }
 
