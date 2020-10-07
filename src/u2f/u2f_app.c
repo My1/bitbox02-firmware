@@ -8,7 +8,7 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <wally_bip39.h>
-#inclide "../wordflow/show_mnemnoic.h"
+//#include <workflow/show_mnemonic.c>
 
 #define APPID_BOGUS_CHROMIUM "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
 #define APPID_BOGUS_FIREFOX "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
@@ -141,9 +141,9 @@ static void _app_string(const uint8_t* app_id, char* out, size_t out_len)
             return;
         }
     }
-    char* mnemonic __attribute__((__cleanup__(_free_string))) = NULL;
+    char* mnemonic=NULL;
     //fallback to hex if something goes wrong
-    if (bip39_mnemonic_from_bytes(NULL, app_id, _seed_length, &mnemonic) != WALLY_OK) {
+    if (bip39_mnemonic_from_bytes(NULL, app_id, 32, &mnemonic) != WALLY_OK) {
         char appid_hex[32 * 2 + 1] = {0};
         util_uint8_to_hex(app_id, 32, appid_hex);
         snprintf(out, out_len, "Unknown site:\n%.16s\n%.16s", appid_hex, appid_hex + 16);
