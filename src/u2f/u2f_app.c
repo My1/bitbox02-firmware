@@ -7,6 +7,8 @@
 
 #include <stddef.h>
 #include <stdio.h>
+#include <wally_bip39.h>
+#inclide "../wordflow/show_mnemnoic.h"
 
 #define APPID_BOGUS_CHROMIUM "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
 #define APPID_BOGUS_FIREFOX "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
@@ -139,9 +141,18 @@ static void _app_string(const uint8_t* app_id, char* out, size_t out_len)
             return;
         }
     }
-    char appid_hex[32 * 2 + 1] = {0};
-    util_uint8_to_hex(app_id, 32, appid_hex);
-    snprintf(out, out_len, "Unknown site:\n%.16s\n%.16s", appid_hex, appid_hex + 16);
+    char* mnemonic __attribute__((__cleanup__(_free_string))) = NULL;
+    //fallback to hex if something goes wrong
+    if (bip39_mnemonic_from_bytes(NULL, app_id, _seed_length, &mnemonic) != WALLY_OK) {
+        char appid_hex[32 * 2 + 1] = {0};
+        util_uint8_to_hex(app_id, 32, appid_hex);
+        snprintf(out, out_len, "Unknown site:\n%.16s\n%.16s", appid_hex, appid_hex + 16);
+        return;
+    }
+    const char* words[24];
+    uint8_t words_count;
+    _split_and_save_wordlist(mnemonic, words, &words_count);
+    snprintf(out, out_len, "Unknown site:\n%s %s\n%s %s", words[0], words[1],words[2],words[3]);
 }
 
 static bool _is_app_id_bogus(const uint8_t* app_id)
