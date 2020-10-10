@@ -24,8 +24,8 @@
 #include <stdint.h>
 
 // TODO: use a TIMER interrupt to get a more accurate timer.
-// 27000 is ~1min.
-#define ACTIVE_AFTER 270000
+// 270000 is ~1min.
+#define ACTIVE_AFTER 45000
 
 static uint32_t _counter = 0;
 static bool _is_active = false;

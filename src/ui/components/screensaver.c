@@ -20,6 +20,9 @@
 #include <hardfault.h>
 #include <screen.h>
 #include <ui/ui_util.h>
+#include <ui/oled/oled.h>
+
+#include <random.h>
 
 #include <string.h>
 
@@ -30,20 +33,29 @@ static void _render(component_t* component)
     static uint16_t counter = 0;
     counter++;
 
-    const uint16_t slowdown_factor = 6; // slow it down a bunch
+    static int8_t x_direction = 1;
+    static int8_t y_direction = 1;
+    static int8_t x_slowdown = 1;
+    static int8_t y_slowdown = 2;
 
-    if (counter % slowdown_factor == 0) {
-        // Start with full logo visible instead of starting from left of the screen.
-        image->position.left++;
-        // Wrap around to the left.
-        if (image->position.left >= component->dimension.width) {
-            image->position.left = -image->dimension.width;
+    const uint16_t master_slowdown = 2; // for slowing down both x and y in the same amount
 
-            image->position.top++;
-            // Wrap around to the top.
-            if (image->position.top + image->dimension.height > component->dimension.height) {
-                image->position.top = 0;
-            }
+    if (counter % (master_slowdown * x_slowdown) == 0) {
+        image->position.left += x_direction;
+        if (((image->position.left + image->dimension.width) >= component->dimension.width &&
+             x_direction > 0) ||
+            (image->position.left < 0 && x_direction < 0)) {
+            x_direction *= -1;
+            oled_set_brightness(random_byte_mcu());
+        }
+    }
+    if (counter % (master_slowdown * y_slowdown) == 0) {
+        image->position.top += y_direction;
+        if (((image->position.top + image->dimension.height) >= component->dimension.height &&
+             y_direction > 0) ||
+            (image->position.top < 0 && y_direction < 0)) {
+            y_direction *= -1;
+            oled_set_brightness(random_byte_mcu());
         }
     }
     ui_util_component_render_subcomponents(component);
@@ -69,10 +81,10 @@ component_t* screensaver_create(void)
     component->dimension.width = SCREEN_WIDTH;
     component->dimension.height = SCREEN_HEIGHT;
     component_t* bb2_logo = image_create(
-        IMAGE_BB2_LOGO,
-        sizeof(IMAGE_BB2_LOGO),
-        IMAGE_BB2_LOGO_W,
-        IMAGE_BB2_LOGO_H,
+        IMAGE_SCREENSAVER,
+        sizeof(IMAGE_SCREENSAVER),
+        IMAGE_SCREENSAVER_W,
+        IMAGE_SCREENSAVER_H,
         CENTER,
         component);
     ui_util_add_sub_component(component, bb2_logo);
