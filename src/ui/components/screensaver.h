@@ -12,20 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef _CONFIRM_MNEMONIC_H_
-#define _CONFIRM_MNEMONIC_H_
+#ifndef _SCREENSAVER_H_
+#define _SCREENSAVER_H_
 
 #include <ui/component.h>
 
-#include <stdint.h>
+component_t* screensaver_create(void);
 
-component_t* confirm_mnemonic_create(
-    const char** wordlist,
-    uint8_t length,
-    uint8_t index,
-    void (*check_word_cb)(uint8_t, void*),
-    void* check_word_cb_param,
-    void (*cancel_cb)(void*),
-    void* cancel_cb_param);
+/**
+ * Resets the animation so that the logo starts to scroll in from left, out of screen.
+ * The vertical position is unchanged, it starts where it left off.
+ */
+void screensaver_reset(component_t* component);
 
 #endif

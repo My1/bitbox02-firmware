@@ -28,6 +28,7 @@
 #include <securechip/securechip.h>
 #include <ui/components/confirm.h>
 #include <ui/components/label.h>
+#include <ui/components/menu.h>
 #include <ui/components/sdcard.h>
 #include <ui/components/status.h>
 #include <ui/components/trinary_input_string.h>
@@ -41,6 +42,7 @@
 #include <ui/screen_stack.h>
 #include <ui/ugui/ugui.h>
 #include <util.h>
+#include <wally_bip39.h>
 #include <wally_crypto.h>
 #include <workflow/confirm.h>
 

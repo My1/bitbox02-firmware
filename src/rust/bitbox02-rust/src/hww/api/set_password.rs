@@ -16,7 +16,6 @@ use super::pb;
 use super::Error;
 
 use crate::workflow::password;
-use bitbox02::password::Password;
 use core::convert::TryInto;
 use pb::response::Response;
 
@@ -29,15 +28,12 @@ pub async fn process(
     pb::SetPasswordRequest { entropy }: &pb::SetPasswordRequest,
 ) -> Result<Response, Error> {
     let entropy32: [u8; 32] = match entropy.as_slice().try_into() {
-        Err(_) => return Err(Error::COMMANDER_ERR_INVALID_INPUT),
+        Err(_) => return Err(Error::InvalidInput),
         Ok(e) => e,
     };
-    let mut password = Password::new();
-    if !password::enter_twice(&mut password).await {
-        return Err(Error::COMMANDER_ERR_GENERIC);
-    }
+    let password = password::enter_twice().await?;
     if !bitbox02::keystore::create_and_store_seed(&password, &entropy32) {
-        return Err(Error::COMMANDER_ERR_GENERIC);
+        return Err(Error::Generic);
     }
     if bitbox02::keystore::unlock(&password).is_err() {
         panic!("Unexpected error during restore: unlock failed.");

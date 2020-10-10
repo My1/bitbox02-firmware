@@ -17,12 +17,14 @@ mod pb {
 }
 
 mod backup;
+mod device_info;
 mod error;
 mod reset;
 mod sdcard;
 mod set_device_name;
 mod set_mnemonic_passphrase_enabled;
 mod set_password;
+mod show_mnemonic;
 
 use alloc::vec::Vec;
 
@@ -82,6 +84,7 @@ fn request_tag(request: &Request) -> u32 {
 /// the C commander.
 async fn process_api(request: &Request) -> Option<Result<Response, Error>> {
     match request {
+        Request::DeviceInfo(_) => Some(device_info::process()),
         Request::DeviceName(ref request) => Some(set_device_name::process(request).await),
         Request::SetPassword(ref request) => Some(set_password::process(request).await),
         Request::Reset(_) => Some(reset::process().await),
@@ -94,6 +97,7 @@ async fn process_api(request: &Request) -> Option<Result<Response, Error>> {
         }))),
         Request::CheckBackup(ref request) => Some(backup::check(request).await),
         Request::CreateBackup(ref request) => Some(backup::create(request).await),
+        Request::ShowMnemonic(_) => Some(show_mnemonic::process().await),
         _ => None,
     }
 }
@@ -109,10 +113,10 @@ pub async fn process(input: Vec<u8>) -> Vec<u8> {
         Ok(pb::Request {
             request: Some(request),
         }) => request,
-        _ => return encode(make_error(Error::COMMANDER_ERR_INVALID_INPUT)),
+        _ => return encode(make_error(Error::InvalidInput)),
     };
     if !bitbox02::commander::states_can_call(request_tag(&request) as u16) {
-        return encode(make_error(Error::COMMANDER_ERR_INVALID_STATE));
+        return encode(make_error(Error::InvalidState));
     }
 
     // Since we will process the call now, so can clear the 'force next' info.

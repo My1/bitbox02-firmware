@@ -48,7 +48,6 @@ set(DBB-FIRMWARE-SOURCES
   ${CMAKE_SOURCE_DIR}/src/workflow/reboot.c
   ${CMAKE_SOURCE_DIR}/src/workflow/restore.c
   ${CMAKE_SOURCE_DIR}/src/workflow/restore_from_mnemonic.c
-  ${CMAKE_SOURCE_DIR}/src/workflow/show_mnemonic.c
   ${CMAKE_SOURCE_DIR}/src/workflow/orientation_screen.c
   ${CMAKE_SOURCE_DIR}/src/workflow/status.c
   ${CMAKE_SOURCE_DIR}/src/workflow/trinary_input.c
@@ -62,6 +61,7 @@ set(DBB-FIRMWARE-SOURCES
   ${CMAKE_SOURCE_DIR}/src/apps/btc/btc_common.c
   ${CMAKE_SOURCE_DIR}/src/apps/btc/btc_params.c
   ${CMAKE_SOURCE_DIR}/src/apps/btc/btc_sign.c
+  ${CMAKE_SOURCE_DIR}/src/apps/btc/btc_sign_msg.c
   ${CMAKE_SOURCE_DIR}/src/apps/btc/btc_sign_validate.c
   ${CMAKE_SOURCE_DIR}/src/apps/btc/btc_bip143.c
   ${CMAKE_SOURCE_DIR}/src/apps/btc/confirm_locktime_rbf.c
@@ -98,6 +98,7 @@ set(DBB-FIRMWARE-UI-SOURCES
     ${CMAKE_SOURCE_DIR}/src/ui/fonts/monogram_5X9.c
     ${CMAKE_SOURCE_DIR}/src/ui/fonts/password_9X9.c
     ${CMAKE_SOURCE_DIR}/src/ui/fonts/password_11X12.c
+    ${CMAKE_SOURCE_DIR}/src/ui/screen_saver.c
     ${CMAKE_SOURCE_DIR}/src/ui/screen_stack.c
     ${CMAKE_SOURCE_DIR}/src/ui/screen_process.c
     ${CMAKE_SOURCE_DIR}/src/ui/event_handler.c
@@ -106,6 +107,7 @@ set(DBB-FIRMWARE-UI-SOURCES
     ${CMAKE_SOURCE_DIR}/src/ui/components/trinary_input_char.c
     ${CMAKE_SOURCE_DIR}/src/ui/components/trinary_input_string.c
     ${CMAKE_SOURCE_DIR}/src/ui/components/waiting.c
+    ${CMAKE_SOURCE_DIR}/src/ui/components/screensaver.c
     ${CMAKE_SOURCE_DIR}/src/ui/components/entry_screen.c
     ${CMAKE_SOURCE_DIR}/src/ui/components/knight_rider.c
     ${CMAKE_SOURCE_DIR}/src/ui/components/right_arrow.c
@@ -125,7 +127,6 @@ set(DBB-FIRMWARE-UI-SOURCES
     ${CMAKE_SOURCE_DIR}/src/ui/components/empty.c
     ${CMAKE_SOURCE_DIR}/src/ui/components/progress.c
     ${CMAKE_SOURCE_DIR}/src/ui/components/sdcard.c
-    ${CMAKE_SOURCE_DIR}/src/ui/components/confirm_mnemonic.c
     ${CMAKE_SOURCE_DIR}/src/ui/components/ui_images.c
     ${CMAKE_SOURCE_DIR}/src/ui/components/confirm_transaction.c
 )
@@ -339,11 +340,13 @@ add_custom_target(rust-bindgen
     --whitelist-function memory_get_noise_static_private_key
     --whitelist-function memory_check_noise_remote_static_pubkey
     --whitelist-function memory_add_noise_remote_static_pubkey
+    --whitelist-function memory_get_device_name
     --whitelist-function memory_set_device_name
     --whitelist-function memory_set_mnemonic_passphrase_enabled
     --whitelist-function memory_set_seed_birthdate
     --whitelist-var MEMORY_DEVICE_NAME_MAX_LEN
     --whitelist-function securechip_attestation_sign
+    --whitelist-function securechip_monotonic_increments_remaining
     --whitelist-function keystore_is_locked
     --whitelist-function keystore_unlock
     --whitelist-function keystore_unlock_bip39
@@ -355,6 +358,7 @@ add_custom_target(rust-bindgen
     --whitelist-function delay_us
     --rustified-enum keystore_error_t
     --whitelist-function util_format_datetime
+    --whitelist-function util_version_short
     --whitelist-function delay_ms
     --whitelist-function UG_PutString
     --whitelist-function UG_FontSelect
@@ -369,6 +373,7 @@ add_custom_target(rust-bindgen
     --whitelist-function confirm_create
     --whitelist-function status_create
     --whitelist-function sdcard_create
+    --whitelist-function menu_create
     --whitelist-function bitboxbase_watchdog_reset
     --whitelist-function bitboxbase_screensaver_reset
     --whitelist-function leds_turn_small_led
@@ -393,6 +398,7 @@ add_custom_target(rust-bindgen
     --whitelist-function trinary_input_string_create_password
     --whitelist-function reset_reset
     --whitelist-function sd_card_inserted
+    --whitelist-var BIP39_WORDLIST_LEN
     ${CMAKE_CURRENT_SOURCE_DIR}/rust/bitbox02-sys/wrapper.h --
     -DPB_NO_PACKED_STRUCTS=1 -DPB_FIELD_16BIT=1 -fshort-enums ${RUST_BINDGEN_FLAGS} ${RUST_INCLUDES}
   )
@@ -409,7 +415,7 @@ if(NOT CMAKE_CROSSCOMPILING)
         # see src/rust/bitbox02-rust-c/src/lib.rs.
         # https://github.com/rust-lang/rust/issues/66740
         RUSTC_BOOTSTRAP=1
-        ${CARGO} test --all-features --target-dir ${RUST_BINARY_DIR} ${RUST_CARGO_FLAG}
+        ${CARGO} test --all-features --target-dir ${RUST_BINARY_DIR} ${RUST_CARGO_FLAG} -- --nocapture
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/rust/
     )
   add_dependencies(rust-test rust-bindgen)

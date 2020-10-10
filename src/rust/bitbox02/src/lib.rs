@@ -94,11 +94,13 @@ pub use bitbox02_sys::buffer_t;
 #[macro_use]
 pub mod util;
 
+// ug_put_string displays a debug message on the screen for 3 sec.
 pub fn ug_put_string(x: i16, y: i16, input: &str, inverted: bool) {
-    if let Ok(buf) = str_to_cstr!(input, 128) {
-        unsafe { bitbox02_sys::UG_PutString(x, y, buf.as_ptr() as *const _, inverted) }
-    } else {
-        screen_print_debug("string didn't fit", 3000);
+    match str_to_cstr!(input, 128) {
+        Ok(buf) => unsafe {
+            bitbox02_sys::UG_PutString(x, y, buf.as_ptr() as *const _, inverted);
+        },
+        Err(msg) => screen_print_debug(msg, 3000),
     }
 }
 
@@ -144,8 +146,11 @@ pub fn screen_print_debug(msg: &str, duration: i32) {
         Ok(cstr) => unsafe {
             bitbox02_sys::screen_print_debug(cstr.as_ptr() as *const _, duration)
         },
-        Err(cstr) => unsafe {
-            bitbox02_sys::screen_print_debug(cstr.as_ptr() as *const _, duration)
+        Err(errmsg) => unsafe {
+            bitbox02_sys::screen_print_debug(
+                str_to_cstr_force!(errmsg, 200).as_ptr() as *const _,
+                duration,
+            )
         },
     }
 }
@@ -256,4 +261,19 @@ pub fn format_datetime(_timestamp: u32, _timezone_offset: i32, date_only: bool) 
     } else {
         "<datetime>".into()
     }
+}
+
+#[cfg(not(feature = "testing"))]
+pub fn version_short() -> &'static str {
+    let s = unsafe {
+        let ptr = bitbox02_sys::util_version_short();
+        let len = crate::util::strlen_ptr(ptr);
+        core::slice::from_raw_parts(ptr, len as _)
+    };
+    core::str::from_utf8(s).unwrap()
+}
+
+#[cfg(feature = "testing")]
+pub fn version_short() -> &'static str {
+    "9.2.0-testing"
 }

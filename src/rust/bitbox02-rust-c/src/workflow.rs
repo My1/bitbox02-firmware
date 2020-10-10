@@ -20,9 +20,8 @@ extern crate alloc;
 
 use alloc::boxed::Box;
 use alloc::string::String;
-use bitbox02::password::Password;
 use bitbox02_rust::bb02_async::{block_on, spin, Task};
-use bitbox02_rust::workflow::{confirm, password, status, unlock};
+use bitbox02_rust::workflow::{confirm, password, status, unlock, verify_message};
 use core::fmt::Write;
 use core::task::Poll;
 
@@ -143,10 +142,13 @@ pub unsafe extern "C" fn rust_workflow_status_unlock_bip39_blocking() {
 pub unsafe extern "C" fn rust_workflow_password_enter_twice_blocking(
     mut password_out: crate::util::CStrMut,
 ) -> bool {
-    let mut password = Password::new();
-    let result = block_on(password::enter_twice(&mut password));
-    password_out.write_str(password.as_str()).unwrap();
-    result
+    match block_on(password::enter_twice()) {
+        Ok(password) => {
+            password_out.write_str(password.as_str()).unwrap();
+            true
+        }
+        Err(()) => false,
+    }
 }
 
 #[no_mangle]
@@ -173,5 +175,25 @@ pub unsafe extern "C" fn rust_workflow_confirm_blocking(
 
 #[no_mangle]
 pub unsafe extern "C" fn rust_workflow_unlock_check_blocking() -> bool {
-    block_on(unlock::unlock_keystore("Unlock device"))
+    block_on(unlock::unlock_keystore("Unlock device")).is_ok()
+}
+
+#[repr(C)]
+pub enum VerifyMessageResult {
+    VerifyMessageResultOk,
+    VerifyMessageResultInvalidInput,
+    VerifyMessageResultUserAbort,
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn rust_workflow_verify_message(
+    msg: crate::util::Bytes,
+) -> VerifyMessageResult {
+    match block_on(verify_message::verify(msg.as_ref())) {
+        Ok(()) => VerifyMessageResult::VerifyMessageResultOk,
+        Err(verify_message::Error::InvalidInput) => {
+            VerifyMessageResult::VerifyMessageResultInvalidInput
+        }
+        Err(verify_message::Error::UserAbort) => VerifyMessageResult::VerifyMessageResultUserAbort,
+    }
 }
