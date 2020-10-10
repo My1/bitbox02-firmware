@@ -23,7 +23,7 @@
 #include <ui/components/waiting.h>
 #include <ui/screen_stack.h>
 #include <ui/ugui/ugui.h>
-#include <memory.h>
+#include <memory/memory.h>
 
 #if PLATFORM_BITBOXBASE == 1
 #include <usart/usart.h>
