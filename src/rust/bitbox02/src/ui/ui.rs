@@ -200,6 +200,7 @@ where
 }
 
 pub fn with_lock_animation<F: Fn()>(f: F) {
+    screen_stack_pop_all();
     unsafe { bitbox02_sys::lock_animation_start() };
     f();
     unsafe { bitbox02_sys::lock_animation_stop() };
