@@ -20,6 +20,7 @@
 #include <apps/eth/eth_common.h>
 #include <apps/eth/eth_sign_msg.h>
 #include <keystore.h>
+#include <rust/rust.h>
 #include <ui/components/confirm.h>
 
 #include <wally_bip32.h>
@@ -35,6 +36,11 @@ static uint8_t _sig[65] =
 bool __wrap_workflow_confirm_blocking(const confirm_params_t* params)
 {
     return true;
+}
+
+VerifyMessageResult __wrap_rust_workflow_verify_message(Bytes msg)
+{
+    return VerifyMessageResultOk;
 }
 
 bool __wrap_keystore_secp256k1_pubkey(

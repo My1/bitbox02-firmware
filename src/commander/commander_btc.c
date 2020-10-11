@@ -20,6 +20,7 @@
 #include <apps/btc/btc.h>
 #include <apps/btc/btc_common.h>
 #include <apps/btc/btc_sign.h>
+#include <apps/btc/btc_sign_msg.h>
 #include <workflow/verify_pub.h>
 
 #include <wally_bip32.h> // for BIP32_INITIAL_HARDENED_CHILD
@@ -105,27 +106,7 @@ static commander_error_t _btc_pub_address_simple(
     }
     if (request->display) {
         const char* coin = btc_common_coin_name(request->coin);
-        char title[100] = {0};
-        int n_written;
-        switch (request->output.script_config.config.simple_type) {
-        case BTCScriptConfig_SimpleType_P2WPKH_P2SH:
-            n_written = snprintf(title, sizeof(title), "%s", coin);
-            break;
-        case BTCScriptConfig_SimpleType_P2WPKH:
-            n_written = snprintf(title, sizeof(title), "%s bech32", coin);
-            break;
-        default:
-            return COMMANDER_ERR_GENERIC;
-        }
-        if (n_written < 0 || n_written >= (int)sizeof(title)) {
-            /*
-             * The message was truncated, or an error occurred.
-             * We don't want to display it: there could
-             * be some possibility for deceiving the user.
-             */
-            return COMMANDER_ERR_GENERIC;
-        }
-        if (!workflow_verify_pub(title, response->pub)) {
+        if (!workflow_verify_pub(coin, response->pub)) {
             return COMMANDER_ERR_USER_ABORT;
         }
     }
@@ -297,6 +278,19 @@ commander_error_t commander_btc(const BTCRequest* request, BTCResponse* response
         if (result == APP_BTC_OK) {
             _handle_sign_next(&response->response.sign_next);
         }
+        return _result(result);
+    }
+    case BTCRequest_sign_message_tag: {
+        response->which_response = BTCResponse_sign_message_tag;
+        const BTCSignMessageRequest* sign_request = &request->request.sign_message;
+        app_btc_result_t result = app_btc_sign_msg(
+            sign_request->coin,
+            &sign_request->script_config.script_config,
+            sign_request->script_config.keypath,
+            sign_request->script_config.keypath_count,
+            sign_request->msg.bytes,
+            sign_request->msg.size,
+            response->response.sign_message.signature);
         return _result(result);
     }
     default:

@@ -1,4 +1,4 @@
-// Copyright 2019 Shift Cryptosecurity AG
+// Copyright 2020 Shift Crypto AG
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,15 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef _WORKFLOW_SHOW_MNEMONIC_H_
-#define _WORKFLOW_SHOW_MNEMONIC_H_
+use super::pb;
+use super::Error;
 
-#include <stdbool.h>
+use pb::response::Response;
 
-/**
- * Starts the show mnemonic workflow.
- * @return true if the mnemonic was confirmed successfully.
- */
-bool workflow_show_mnemonic_create(void);
+use bitbox02::{memory, securechip};
 
-#endif
+pub fn process() -> Result<Response, Error> {
+    Ok(Response::DeviceInfo(pb::DeviceInfoResponse {
+        name: memory::get_device_name(),
+        initialized: memory::is_initialized(),
+        version: bitbox02::version_short().into(),
+        mnemonic_passphrase_enabled: memory::is_mnemonic_passphrase_enabled(),
+        monotonic_increments_remaining: securechip::monotonic_increments_remaining()?,
+    }))
+}

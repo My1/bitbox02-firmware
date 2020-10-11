@@ -13,19 +13,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+extern crate alloc;
+use alloc::string::String;
+
 // deduct one for the null terminator.
 pub const DEVICE_NAME_MAX_LEN: usize = bitbox02_sys::MEMORY_DEVICE_NAME_MAX_LEN as usize - 1;
 
+pub struct Error;
+
+pub fn get_device_name() -> String {
+    let mut name = [0u8; DEVICE_NAME_MAX_LEN + 1];
+    unsafe { bitbox02_sys::memory_get_device_name(name.as_mut_ptr()) }
+    crate::util::str_from_null_terminated(&name[..])
+        .unwrap()
+        .into()
+}
+
 /// `name.as_bytes()` must be smaller or equal to
 /// `DEVICE_NAME_MAX_LEN`, otherwise this function panics.
-pub fn set_device_name(name: &str) -> Result<(), ()> {
+pub fn set_device_name(name: &str) -> Result<(), Error> {
     match unsafe {
         bitbox02_sys::memory_set_device_name(
             crate::str_to_cstr_force!(name, DEVICE_NAME_MAX_LEN).as_ptr(),
         )
     } {
         true => Ok(()),
-        false => Err(()),
+        false => Err(Error),
     }
 }
 

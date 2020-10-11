@@ -1,4 +1,4 @@
-// Copyright 2019 Shift Cryptosecurity AG
+// Copyright 2020 Shift Crypto AG
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,20 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef _CONFIRM_MNEMONIC_H_
-#define _CONFIRM_MNEMONIC_H_
+#ifndef _APPS_BTC_SIGN_MSG_H
+#define _APPS_BTC_SIGN_MSG_H
 
-#include <ui/component.h>
+#include "btc.h"
 
+#include <stddef.h>
 #include <stdint.h>
 
-component_t* confirm_mnemonic_create(
-    const char** wordlist,
-    uint8_t length,
-    uint8_t index,
-    void (*check_word_cb)(uint8_t, void*),
-    void* check_word_cb_param,
-    void (*cancel_cb)(void*),
-    void* cancel_cb_param);
+#include <compiler_util.h>
+
+#include <hww.pb.h>
+
+USE_RESULT app_btc_result_t app_btc_sign_msg(
+    BTCCoin coin,
+    const BTCScriptConfig* script_config,
+    const uint32_t* keypath,
+    size_t keypath_len,
+    const uint8_t* msg,
+    size_t msg_size,
+    uint8_t* signature_out);
 
 #endif
