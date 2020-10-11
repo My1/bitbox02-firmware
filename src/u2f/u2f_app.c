@@ -18,19 +18,17 @@ typedef struct {
     const char* name;
 } app_t;
 
-static void short_mnemonic(
-    char* mnemonic,
-    const char** wordlist_out)
+static void short_mnemonic(char* mnemonic, const char** wordlist_out)
 {
     char* next_word = strtok(mnemonic, " ");
 
     int i = 0;
-    while (next_word != NULL&&i<4) {
+    while (next_word != NULL && i < 4) {
         wordlist_out[i] = next_word;
         next_word = strtok(NULL, " ");
         i++;
     }
-//    *words_count_out = i;
+    //    *words_count_out = i;
 }
 
 static const app_t _apps[] = {
@@ -156,8 +154,8 @@ static void _app_string(const uint8_t* app_id, char* out, size_t out_len)
             return;
         }
     }
-    char* mnemonic=NULL;
-    //fallback to hex if something goes wrong
+    char* mnemonic = NULL;
+    // fallback to hex if something goes wrong
     if (bip39_mnemonic_from_bytes(NULL, app_id, 32, &mnemonic) != WALLY_OK) {
         char appid_hex[32 * 2 + 1] = {0};
         util_uint8_to_hex(app_id, 32, appid_hex);
@@ -166,7 +164,7 @@ static void _app_string(const uint8_t* app_id, char* out, size_t out_len)
     }
     const char* words[24];
     short_mnemonic(mnemonic, words);
-    snprintf(out, out_len, "Unknown site:\n%s %s\n%s %s", words[0], words[1],words[2],words[3]);
+    snprintf(out, out_len, "Unknown site:\n%s %s\n%s %s", words[0], words[1], words[2], words[3]);
 }
 
 static bool _is_app_id_bogus(const uint8_t* app_id)

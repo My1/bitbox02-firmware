@@ -19,8 +19,8 @@
 
 #include <hardfault.h>
 #include <screen.h>
-#include <ui/ui_util.h>
 #include <ui/oled/oled.h>
+#include <ui/ui_util.h>
 
 #include <random.h>
 

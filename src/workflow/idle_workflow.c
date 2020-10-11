@@ -18,12 +18,12 @@
 #include <string.h>
 
 #include <hww.h>
+#include <memory/memory.h>
 #include <platform_config.h>
 #include <ui/components/info_centered.h>
 #include <ui/components/waiting.h>
 #include <ui/screen_stack.h>
 #include <ui/ugui/ugui.h>
-#include <memory/memory.h>
 
 #if PLATFORM_BITBOXBASE == 1
 #include <usart/usart.h>
@@ -44,8 +44,8 @@ static void _init_communication(void)
 #elif PLATFORM_BITBOX02 == 1
     usb_start(hww_setup);
 #endif
-    //if not initialized tell the user to use the app.
-    if(!memory_is_initialized()) {
+    // if not initialized tell the user to use the app.
+    if (!memory_is_initialized()) {
         component_t* waiting_screen = waiting_create();
         UG_ClearBuffer();
         waiting_screen->f->render(waiting_screen);
@@ -53,8 +53,7 @@ static void _init_communication(void)
         waiting_screen->f->cleanup(waiting_screen);
         delay_ms(1300);
         ui_screen_stack_push(info_centered_create("See the BitBoxApp", NULL));
-    }
-    else {
+    } else {
         ui_screen_stack_switch(lockscreen_create());
     }
 }
